@@ -334,11 +334,24 @@ export class WhatsAppTracker {
             // We only care about 'inactive' receipts here
             if (attrs.type === 'inactive') {
                 trackerLogger.debug(`[RAW RECEIPT] Received inactive receipt: ${JSON.stringify(attrs)}`);
-                
+
                 const msgId = attrs.id;
                 const fromJid = attrs.from;
-                
-                if (this.trackedJids.has(fromJid)) {
+
+                // Guard against missing from attribute
+                if (!fromJid) {
+                    trackerLogger.debug('[RAW RECEIPT] Missing from JID in receipt');
+                    return;
+                }
+
+                // Extract base number from device JID (e.g., "15109129852:22@s.whatsapp.net" -> "15109129852")
+                const baseNumber = fromJid.split('@')[0].split(':')[0];
+
+                // Check if this matches our target (with or without device ID)
+                const isTracked = this.trackedJids.has(fromJid) ||
+                                  this.trackedJids.has(`${baseNumber}@s.whatsapp.net`);
+
+                if (isTracked) {
                     this.processAck(msgId, fromJid, 'inactive');
                 }
             }
