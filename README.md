@@ -1,5 +1,5 @@
 <h1 align="center">Device Activity Tracker</h1>
-<p align="center">WhatsApp Activity Tracker via RTT Analysis</p>
+<p align="center">WhatsApp & Signal Activity Tracker via RTT Analysis</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-20+-339933?style=flat&logo=node.js&logoColor=white" alt="Node.js"/>
@@ -56,7 +56,7 @@ npm run start:client
 
 Open `http://localhost:3000`, scan QR code with WhatsApp, then enter phone number to track (e.g., `491701234567`).
 
-### CLI Interface
+### CLI Interface (only WhatsApp)
 
 ```bash
 npm start
@@ -85,7 +85,22 @@ Follow prompts to authenticate and enter target number.
 
 ## How It Works
 
-The tracker sends reaction messages to non-existent message IDs, which triggers no notifications at the target. The time between sending the probe message and receiving the CLIENT ACK (Status 3) is measured as RTT. Device state is detected using a dynamic threshold calculated as 90% of the median RTT: values below the threshold indicate active usage, values above indicate standby mode. Measurements are stored in a history and the median is continuously updated to adapt to different network conditions.
+The tracker sends probe messages and measures the Round-Trip Time (RTT) to detect device activity. Two probe methods are available:
+
+### Probe Methods
+
+| Method | Description                                                                                                     |
+|--------|-----------------------------------------------------------------------------------------------------------------|
+| **Delete** (Default) | Sends a "delete" request for a non-existent message ID.                                                         |
+| **Reaction** | Sends a reaction emoji to a non-existent message ID. |
+
+### Detection Logic
+
+The time between sending the probe message and receiving the CLIENT ACK (Status 3) is measured as RTT. Device state is detected using a dynamic threshold calculated as 90% of the median RTT: values below the threshold indicate active usage, values above indicate standby mode. Measurements are stored in a history and the median is continuously updated to adapt to different network conditions.
+
+### Switching Probe Methods
+
+In the web interface, you can switch between probe methods using the dropdown in the control panel. In CLI mode, the delete method is used by default.
 
 ## Common Issues
 
@@ -96,10 +111,11 @@ The tracker sends reaction messages to non-existent message IDs, which triggers 
 ```
 device-activity-tracker/
 ├── src/
-│   ├── tracker.ts      # Core RTT analysis logic
-│   ├── server.ts       # Backend API server
-│   └── index.ts        # CLI interface
-├── client/             # React web interface
+│   ├── tracker.ts         # WhatsApp RTT analysis logic
+│   ├── signal-tracker.ts  # Signal RTT analysis logic
+│   ├── server.ts          # Backend API server (both platforms)
+│   └── index.ts           # CLI interface
+├── client/                # React web interface
 └── package.json
 ```
 
